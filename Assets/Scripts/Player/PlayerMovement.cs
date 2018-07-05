@@ -4,74 +4,48 @@ using UnityEngine;
 using UnityEngine.AI;
 
 
-public class PlayerMovement : MonoBehaviour {
+public class PlayerMovement : ActorMovement {
 
-    private NavMeshAgent agent;
-    public float movementSpeed = 5.0f;
-    public bool moving;
-    private List<Vector3> destinationQueue = new List<Vector3>();
-
-    private Utils utils
+    protected InputManager inputManager
     {
-        get { return GameObject.FindGameObjectWithTag(Tags.GAMECONTROLLER).GetComponent<Utils>(); }
+        get { return GameObject.FindGameObjectWithTag(Tags.GAMECONTROLLER).GetComponent<InputManager>(); }
     }
 
-    private bool ableToMove = true;
-    public bool AbleToMove
+    public List<GameObject> Enemies
     {
-        get { return ableToMove; }
-        set { ableToMove = value; }
-    }
-
-    private void Start()
-    {
-        agent = GetComponent<NavMeshAgent>();
-        agent.speed = movementSpeed;
-    }
-
-    private void Update()
-    {
-        float remainingDistance = Vector3.Distance(transform.position, agent.destination);
-        print(remainingDistance);
-        if (remainingDistance < 1)
+        get
         {
-            moving = false;
-            if(!(destinationQueue.Count == 0))
-            {
-                MoveTo(destinationQueue[0]);
-                destinationQueue.RemoveAt(0);
-            }
+            return new List<GameObject>(GameObject.FindGameObjectsWithTag(Tags.ENEMY));
         }
     }
 
-    private int getFloorLogicDistanceToLastAddedDestination(Vector3 destination)
+    public override void SetDestination(Floor target)
     {
-        Vector3 basePosition;
-        if (destinationQueue.Count == 0) {
-            if (agent.isStopped)
-                basePosition = transform.position;
-            else
-                basePosition = agent.destination;
-        }
-        else
+        if (utils.getFloorLogicDistance(currentFloor, target) == 1)
         {
-            basePosition = destinationQueue[destinationQueue.Count - 1];
+            currentDestination = target;
+            Move();
         }
-        return utils.getFloorLogicDistance(basePosition, destination);
     }
 
-    public void SetDestination(Vector3 destination)
+    public override void Move()
     {
-        if(getFloorLogicDistanceToLastAddedDestination(destination) == 1)
-            destinationQueue.Add(destination);
-    }
-
-    public void MoveTo(Vector3 destination)
-    {
-        if (!moving && ableToMove)
+        base.Move();
+        foreach (GameObject enemy in Enemies)
         {
-            agent.destination = destination;
-            moving = true;
+            enemy.SendMessage("PlayerMoving", SendMessageOptions.DontRequireReceiver);
         }
+        inputManager.SendMessage("PlayerMoving", SendMessageOptions.DontRequireReceiver);
+    }
+
+    protected override void StepReached()
+    {
+        base.StepReached();
+        currentFloor.ActivateFloor();
+        foreach (GameObject enemy in Enemies)
+        {
+            enemy.SendMessage("PlayerMoved", SendMessageOptions.DontRequireReceiver);
+        }
+        inputManager.SendMessage("PlayerMoved", SendMessageOptions.DontRequireReceiver);
     }
 }

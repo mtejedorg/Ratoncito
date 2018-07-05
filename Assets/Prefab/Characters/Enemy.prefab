@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33282939045324782}
   - component: {fileID: 136765336996615002}
   - component: {fileID: 23335082129920578}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -38,7 +38,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4132443640478212}
   - component: {fileID: 195870592377052132}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -85,6 +85,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: d5086a7a622ea98459ad763a93820882, type: 2}
   m_StaticBatchInfo:

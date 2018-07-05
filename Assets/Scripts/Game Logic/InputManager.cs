@@ -17,6 +17,8 @@ public class InputManager : MonoBehaviour
 
     public GameObject player;
 
+    private bool isPlayerMoving = false;
+
     private void Start()
     {
         cam = GameObject.FindGameObjectWithTag(Tags.MAINCAMERA).GetComponent<Camera>(); ;
@@ -24,7 +26,6 @@ public class InputManager : MonoBehaviour
 
     void Update()
     {
-
         mousePositionRay = cam.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         GameObject gameObjectHit;
@@ -34,12 +35,10 @@ public class InputManager : MonoBehaviour
 
             if (Input.GetButtonDown(Press))
             {
+                if (isPlayerMoving) return;
                 if (gameObjectHit.layer == Layers.FLOOR)
                 {
-                    print("Moviendo Player");
-                    Vector3 destination = gameObjectHit.transform.position;
-                    destination.y = player.transform.position.y;
-                    player.GetComponent<PlayerMovement>().SetDestination(destination);
+                    player.GetComponent<PlayerMovement>().SetDestination(gameObjectHit.GetComponent<Floor>());
                 }
             }
             if (Input.GetButtonDown(Action))
@@ -47,12 +46,19 @@ public class InputManager : MonoBehaviour
 
                 if (gameObjectHit.layer == Layers.FLOOR)
                 {
-                    print("Moviendo Enemigo");
-                    Vector3 destination = gameObjectHit.transform.position;
-                    destination.y = player.transform.position.y;
-                    GameObject.FindGameObjectWithTag(Tags.ENEMY).GetComponent<EnemyMovement>().SetDestination(destination);
+                    GameObject.FindGameObjectWithTag(Tags.ENEMY).GetComponent<EnemyMovement>().SetDestination(gameObjectHit);
                 }
             }
         }
+    }
+
+    public void PlayerMoving()
+    {
+        isPlayerMoving = true;
+    }
+
+    public void PlayerMoved()
+    {
+        isPlayerMoving = false;
     }
 }

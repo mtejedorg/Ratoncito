@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 95369585352018432}
   - component: {fileID: 195842952574214118}
   - component: {fileID: 114736428462844710}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   - component: {fileID: 4214683669679160}
   - component: {fileID: 33477079570288516}
   - component: {fileID: 23574215016503040}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: PlayerModel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,6 +87,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 7e0caf30ca9daea4f9f686e26009c24f, type: 2}
   m_StaticBatchInfo:
@@ -132,6 +133,7 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
 --- !u!114 &114736428462844710
 MonoBehaviour:
   m_ObjectHideFlags: 1

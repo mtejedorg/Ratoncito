@@ -10,19 +10,24 @@ public class EnemyAI : MonoBehaviour {
     public int maxHearRange = 3;
     public int maxVisualRange = 2;
 
-    private PlayerMovement characterMovement;
+    private ActorMovement characterMovement;
 
     private void Start()
     {
         player = GameObject.FindGameObjectWithTag(Tags.PLAYER);
         utils = GameObject.FindGameObjectWithTag(Tags.GAMECONTROLLER).GetComponent<Utils>();
-        characterMovement = GetComponent<PlayerMovement>();
+        characterMovement = GetComponent<ActorMovement>();
     }
 
-    public void NoisyAlert(Vector3 floorSquareCenter)
+    public bool inHearRange(Floor floor)
     {
-        if (utils.getFloorLogicDistance(transform.position, floorSquareCenter) <= maxHearRange)
-            characterMovement.SetDestination(floorSquareCenter);
+        return utils.getFloorLogicDistance(transform.position, floor.Center) <= maxHearRange;
+    }
+
+    public void NoisyAlert(Floor floor)
+    {
+        if (inHearRange(floor))
+            characterMovement.SetDestination(floor);
 
     }
 

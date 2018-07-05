@@ -3,127 +3,64 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyMovement : MonoBehaviour {
+public class EnemyMovement : ActorMovement {
 
-    private NavMeshAgent agent;
-    public float movementSpeed = 5.0f;
-    public bool moving;
-    private List<Vector3> destinationQueue = new List<Vector3>();
+    public int stepsPerTurn = 1;
 
-    private Utils utils
-    {
-        get { return GameObject.FindGameObjectWithTag(Tags.GAMECONTROLLER).GetComponent<Utils>(); }
-    }
-
-    private bool ableToMove = true;
-    public bool AbleToMove
-    {
-        get { return ableToMove; }
-        set { ableToMove = value; }
-    }
-
-    private void Start()
-    {
-        agent = GetComponent<NavMeshAgent>();
-        agent.speed = movementSpeed;
-    }
-
-    private void Update()
-    {
-        float remainingDistance = Vector3.Distance(transform.position, agent.destination);
-        print(remainingDistance);
-        if (remainingDistance < 1)
-        {
-            moving = false;
-            if (!(destinationQueue.Count == 0))
-            {
-                MoveTo(destinationQueue[0]);
-                destinationQueue.RemoveAt(0);
-            }
-        }
-    }
-
-    private int getFloorLogicDistanceToLastAddedDestination(Vector3 destination)
-    {
-        Vector3 basePosition;
-        if (destinationQueue.Count == 0)
-        {
-            if (agent.isStopped)
-                basePosition = transform.position;
-            else
-                basePosition = agent.destination;
-        }
-        else
-        {
-            basePosition = destinationQueue[destinationQueue.Count - 1];
-        }
-        return utils.getFloorLogicDistance(basePosition, destination);
-    }
-
-    private Vector3 nextStepInPath(Vector3 currentPos, Vector3 destination)
+    private Floor nextStepInPath(Floor from, Floor to)
     {
         GameObject[] floorSquares = GameObject.FindGameObjectsWithTag(Tags.FLOORSQUARE);
 
         // Cogemos los cuadrados a distancia 1
-        List<GameObject> range1FloorSquares = new List<GameObject>();
-        foreach(GameObject floorSquare in floorSquares)
+        List<Floor> range1FloorSquares = new List<Floor>();
+        foreach (GameObject floorSquare in floorSquares)
         {
-            if(utils.getFloorLogicDistance(currentPos, floorSquare.transform.position) == 1)
+            if (utils.getFloorLogicDistance(from.Center, floorSquare.transform.position) == 1)
             {
-                range1FloorSquares.Add(floorSquare);
+                range1FloorSquares.Add(floorSquare.GetComponent<Floor>());
             }
         }
 
-        // Elegimos uno de ellos
-        Vector3 currentBestDestinationFloorSquareCenter = destination;
-        int currentMinFloorLogicDistance = 100;
+        // Elegimos uno de ellos, el que más nos acerque al destino
+        Floor currentSelectedFloorSquare = range1FloorSquares[0];
+        float currentMinFloorLogicDistance = 99999;
 
-        foreach(GameObject floorSquare in range1FloorSquares)
+        foreach (Floor floorSquare in range1FloorSquares)
         {
-            int currentFloorLogicDistance = utils.getFloorLogicDistance(currentPos, destination);
-            if (currentFloorLogicDistance < currentMinFloorLogicDistance)
+            float currentFloorDistance = Vector3.Distance(floorSquare.Center, to.Center);
+            if (currentFloorDistance < currentMinFloorLogicDistance)
             {
-                currentMinFloorLogicDistance = currentFloorLogicDistance;
-                currentBestDestinationFloorSquareCenter = floorSquare.transform.position;
+                currentMinFloorLogicDistance = currentFloorDistance;
+                currentSelectedFloorSquare = floorSquare;
             }
         }
 
-        return currentBestDestinationFloorSquareCenter;
+        return currentSelectedFloorSquare;
     }
 
-    private void CalculatePath (Vector3 destination)
+    private Floor CalculateStep(Floor to)
     {
-        int numSteps = getFloorLogicDistanceToLastAddedDestination(destination);
-        Vector3 currentStep = transform.position;
-        for(int i = 0; i<numSteps; i++)
+        Floor currentStep = currentFloor;
+
+        for (int i = 0; i < stepsPerTurn; i++)
         {
-            if(utils.getFloorLogicDistance(currentStep, destination) > 1)
+            if (currentStep != to)
             {
-                currentStep = nextStepInPath(currentStep, destination);
-                destinationQueue.Add(currentStep);
-            } else
-            {
-                destinationQueue.Add(destination);
+                currentStep = nextStepInPath(currentStep, to);
             }
-
         }
+        return currentStep;
     }
 
-    public void SetDestination(Vector3 destination)
+    public override void Move()
     {
-        destinationQueue.Clear();
-        if (getFloorLogicDistanceToLastAddedDestination(destination) == 1)
-            destinationQueue.Add(destination);
-        else
-            CalculatePath(destination);
+        if (Destination == null) return;
+        currentDestination = CalculateStep(Destination);
+        AgentMoveTo(currentDestination);
     }
 
-    public void MoveTo(Vector3 destination)
+    public void PlayerMoving()
     {
-        if (!moving && ableToMove)
-        {
-            agent.destination = destination;
-            moving = true;
-        }
+        Move();
     }
 }
